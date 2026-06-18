@@ -1,0 +1,32 @@
+.curved-loop-jacket {
+  min-height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: visible;
+  padding: 2.5rem 0 0.5rem 0;
+}
+
+.curved-loop-svg {
+  user-select: none;
+  width: 100%;
+  aspect-ratio: 1440 / 140;
+  overflow: visible;
+  display: block;
+  font-size: 2rem;
+  fill: #94a3b8; /* subtle light slate color for a premium aesthetic */
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .curved-loop-svg {
+    font-size: 6.5rem; /* Significantly larger, bold text inside SVG coordinates for mobile screens */
+    aspect-ratio: 1440 / 320; /* Proportionally expanded height to prevent large letters from clipping */
+  }
+}
