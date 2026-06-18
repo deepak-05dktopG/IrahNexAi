@@ -11,20 +11,72 @@ const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     projectType: 'website',
     message: '',
   });
 
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate form submission
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', email: '', projectType: 'website', message: '' });
-    }, 4000);
+    setSubmitting(true);
+    setError(false);
+
+    // ─── EMAILJS CONFIGURATION ───
+    // Sign up on https://www.emailjs.com/ and configure these values:
+    const EMAILJS_SERVICE_ID = 'service_vfaufya';
+    const EMAILJS_TEMPLATE_ID = 'template_na2tjb8';
+    const EMAILJS_PUBLIC_KEY = 'iBwGKG6kZ6yy8RpGf';
+
+    if (EMAILJS_SERVICE_ID === 'YOUR_EMAILJS_SERVICE_ID' || !EMAILJS_SERVICE_ID) {
+      console.log('EmailJS not configured. Simulating submission payload:', formData);
+      setTimeout(() => {
+        setSubmitting(false);
+        setSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', projectType: 'website', message: '' });
+        setTimeout(() => setSubmitted(false), 4000);
+      }, 1000);
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service_id: EMAILJS_SERVICE_ID,
+          template_id: EMAILJS_TEMPLATE_ID,
+          user_id: EMAILJS_PUBLIC_KEY,
+          template_params: {
+            from_name: formData.name,
+            from_email: formData.email,
+            phone: formData.phone,
+            project_type: formData.projectType,
+            message: formData.message,
+          },
+        }),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', projectType: 'website', message: '' });
+        setTimeout(() => setSubmitted(false), 4000);
+      } else {
+        const errText = await response.text();
+        console.error('EmailJS Submit Failed:', errText);
+        setError(true);
+      }
+    } catch (err) {
+      console.error('EmailJS Connection Error:', err);
+      setError(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -49,7 +101,7 @@ const Contact = () => {
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-indigo-700/5 rounded-full blur-[120px] pointer-events-none z-0" />
 
       <div className="max-w-6xl mx-auto relative z-10">
-        
+
         {/* Header */}
         <div className="text-center mb-16">
           <motion.div
@@ -79,7 +131,7 @@ const Contact = () => {
         </div>
 
         <div className="grid lg:grid-cols-5 gap-12 items-start">
-          
+
           {/* Left Side: Contact Information */}
           <div className="lg:col-span-2 space-y-6">
             <motion.div
@@ -188,6 +240,21 @@ const Contact = () => {
                 </div>
 
                 <div>
+                  <label htmlFor="phone" className="block text-slate-300 text-sm font-semibold mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+91 98765 43210"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                <div>
                   <label htmlFor="projectType" className="block text-slate-300 text-sm font-semibold mb-2">
                     What can we help you with?
                   </label>
@@ -223,8 +290,18 @@ const Contact = () => {
                   />
                 </div>
 
-                <button type="submit" className="btn-primary w-full justify-center py-3.5 text-sm">
-                  Send Message <ArrowRight className="w-4 h-4" />
+                {error && (
+                  <p className="text-red-400 text-sm text-center">
+                    Oops! Something went wrong. Please try again or email hello@irahnex.ai.
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-primary w-full justify-center py-3.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitting ? 'Sending...' : 'Send Message'} <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
             )}
